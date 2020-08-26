@@ -15,17 +15,17 @@ import javax.swing.Timer;
 @SuppressWarnings("serial")
 public class Visualisation extends JPanel {
 
-    private int[][] grid;
+    private utils.Item[][] grid;
     private static final Random rnd = new Random();
     private int generationCounter;
 
     public Visualisation(int height, int width) {
-        this.grid = new int[height][width];
+        this.grid = new utils.Item[height][width];
     }
 
-    public void UpdateGrid(int[] grid) {
+    public void UpdateGrid(utils.Item[] grid) {
         for (int i = 0; i < this.grid.length; i++)
-            System.arraycopy(grid, 0 + i * this.grid[0].length, this.grid[i], 0, this.grid[0].length);
+            System.arraycopy(grid, i * this.grid[0].length, this.grid[i], 0, this.grid[0].length);
     }
 
     @Override
@@ -42,19 +42,19 @@ public class Visualisation extends JPanel {
         for (int i = 0; i < grid.length; i++) {
             for (int j = 0; j < grid[i].length; j++) {
                 switch (grid[i][j]) {
-                    case 1:
+                    case food:
                         g.setColor(Color.green);
                         g.fillRect(j * 4, i * 4, 4, 4);
                         break;
-                    case 2:
+                    case wall:
                         g.setColor(Color.black);
                         g.fillRect(j * 4, i * 4, 4, 4);
                         break;
-                    case 3:
+                    case cell:
                         g.setColor(Color.blue);
                         g.fillRect(j * 4, i * 4, 4, 4);
                         break;
-                    case 4:
+                    case deadCell:
                         g.setColor(Color.red);
                         g.fillRect(j * 4, i * 4, 4, 4);
                         break;

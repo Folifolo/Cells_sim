@@ -4,6 +4,7 @@ import cellular.utils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -65,9 +66,9 @@ public abstract class Cell {
         this.y =  view[1];
     }
 
-    protected abstract int MakeDecision(int vision);
+    protected abstract utils.Action MakeDecision(utils.Item vision);
 
-    public abstract int MakeTurn(int vision);
+    public abstract utils.Action MakeTurn(utils.Item vision);
 
     public void SaveGenome(String path) {
 

@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -28,14 +27,15 @@ public class Game {
     }
 
     public void Play() throws WrongPositionException, InterruptedException {
-        int turnCounter = 0;
         Random ran = new Random();
         for (int i = 0; i < 4; i++)
             placeCell(ran.nextInt(gameMap.getWidth() - 2) + 1, ran.nextInt(gameMap.getHeight() - 2) + 1, 30);
 
-        gameMap.AddItems(30, 2);
-        gameMap.AddItems(30, 1);
 
+        gameMap.AddItems(30, utils.Item.wall);
+        gameMap.AddItems(30, utils.Item.food);
+
+        int turnCounter = 0;
         while (true) {
             turnCounter++;
             for (Cell cell1 : cells) {
@@ -48,41 +48,52 @@ public class Game {
     private void cellAct(@NotNull Cell cell) throws InterruptedException, WrongPositionException {
         int[] cellView = cell.ViewPosition();
         int[] cellPosition = cell.GetPosition();
-        int action = cell.MakeTurn(gameMap.GetTile(cellView[0], cellView[1]));
+        utils.Action action = cell.MakeTurn(gameMap.GetTile(cellView[0], cellView[1]));
 
         visual.UpdateGrid(gameMap.grid);
         visual.repaint();
         TimeUnit.MILLISECONDS.sleep(100);
 
         if (cell.GetEnergy() <= 0) {
-            gameMap.SetTile(cellPosition[0], cellPosition[1], utils.itemNumber.get("dead cell"));
-        } else if (action == utils.actionNumber.get("move")) {
-            if (gameMap.GetTile(cellView[0], cellView[1]) == utils.itemNumber.get("space")) {
-                gameMap.DeleteCell(cellPosition[0], cellPosition[1]);
-                cell.Move();
-                gameMap.PlaceCell(cellView[0], cellView[1]);
-            }
-        } else if (action == utils.actionNumber.get("eat")) {
-            if (gameMap.GetTile(cellView[0], cellView[1]) == utils.itemNumber.get("food")) {
-                gameMap.SetTile(cellView[0], cellView[1], utils.itemNumber.get("space"));
-                cell.AddEnergy(5);
-            }
-            if (gameMap.GetTile(cellView[0], cellView[1]) == utils.itemNumber.get("dead cell")) {
-                Cell cell2 = FindCell(cellView[0], cellView[1]);
-                cells.remove(cell2);
-                gameMap.SetTile(cellView[0], cellView[1], utils.itemNumber.get("space"));
-                cell.AddEnergy(10);
-            }
-        } else if (action == utils.actionNumber.get("attack")) {
-            if (gameMap.GetTile(cellView[0], cellView[1]) == utils.itemNumber.get("cell")) {
-                Cell cell2 = FindCell(cellView[0], cellView[1]);
-                cell2.AddEnergy(-5);
-                cell.AddEnergy(5);
+            gameMap.SetTile(cellPosition[0], cellPosition[1], utils.Item.deadCell);
+        } else {
+            switch (action) {
+                case stay:
+                case cw:
+                case ccw:
+                    break;
+                case eat:
+                    if (gameMap.GetTile(cellView[0], cellView[1]) == utils.Item.food) {
+                        gameMap.SetTile(cellView[0], cellView[1], utils.Item.space);
+                        cell.AddEnergy(5);
+                    }
+                    if (gameMap.GetTile(cellView[0], cellView[1]) == utils.Item.deadCell) {
+                        Cell cell2 = FindCell(cellView[0], cellView[1]);
+                        cells.remove(cell2);
+                        gameMap.SetTile(cellView[0], cellView[1], utils.Item.space);
+                        cell.AddEnergy(10);
+                    }
+                    break;
+                case move:
+                    if (gameMap.GetTile(cellView[0], cellView[1]) == utils.Item.space) {
+                        gameMap.DeleteCell(cellPosition[0], cellPosition[1]);
+                        cell.Move();
+                        gameMap.PlaceCell(cellView[0], cellView[1]);
+                    }
+                    break;
+                case attack:
+                    if (gameMap.GetTile(cellView[0], cellView[1]) == utils.Item.cell) {
+                        Cell cell2 = FindCell(cellView[0], cellView[1]);
+                        cell2.AddEnergy(-5);
+                        cell.AddEnergy(5);
+                        break;
+                    }
             }
         }
     }
 
-    private Cell FindCell (int x, int y) throws WrongPositionException {
+    @NotNull
+    private Cell FindCell(int x, int y) throws WrongPositionException {
 
         for (Cell cell1 : cells) {
             if (cell1.GetPosition()[0] == x && cell1.GetPosition()[1] == y)
